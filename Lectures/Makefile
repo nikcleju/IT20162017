@@ -12,5 +12,11 @@ HTML = tutorial.html
 01:
 	$(PANDOC) -f $(IFORMAT) $(FLAGS) -o 01_DiscreteInformationSources.pdf slides_header.md 01_DiscreteInformationSources.md
 
-01v: 01
+01w: 01
 	start 01_DiscreteInformationSources.pdf &
+	
+02:
+	$(PANDOC) -f $(IFORMAT) $(FLAGS) -o 02_DiscreteTransmissionChannels.pdf slides_header.md 02_DiscreteTransmissionChannels.md
+
+02w: 02
+	start 02_DiscreteTransmissionChannels.pdf &
