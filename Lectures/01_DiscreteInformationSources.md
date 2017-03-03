@@ -198,6 +198,18 @@ $$\sIV{S}{0.14}{0.29}{0.4}{0.17}$$
     * What distribution makes guessing the number the most difficult?
     * What distribution makes guessing the number the easiest?
 
+### Efficiency and redundancy
+
+* Efficiency of a DMS:
+$$\eta = \frac{H(S)}{H_{max}} = \frac{H(S)}{\log(n)}$$
+
+* Absolute redundancy of a DMS:
+$$R = H_{max} - H(S)$$
+
+* Relative redundancy of a DMS:
+$$\rho = \frac{H_{max} - H(S)}{H_{max}} = 1 - \eta$$
+
+
 ### Information flow of a DMS
 
 * Suppose that message $s_i$ takes time $t_i$ to be transmitted via some channel.
