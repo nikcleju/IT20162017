@@ -20,3 +20,15 @@ HTML = tutorial.html
 
 02w: 02
 	start 02_DiscreteTransmissionChannels.pdf &
+
+03:
+	$(PANDOC) -f $(IFORMAT) $(FLAGS) -o 03_SourceCoding.pdf slides_header.md 03_SourceCoding.md
+
+03w: 02
+	start 03_SourceCoding.pdf &
+	
+04:
+	$(PANDOC) -f $(IFORMAT) $(FLAGS) -o 04_ErrorControlCoding.pdf slides_header.md 04_ErrorControlCoding.md
+
+04w: 02
+	start 04_ErrorControlCoding.pdf &
