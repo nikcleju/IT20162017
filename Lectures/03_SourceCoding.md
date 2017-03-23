@@ -102,16 +102,27 @@ are not instantaneous)
 
 Proof
 
-* blackboard
+* There is exactly one codeword matching the beginning of the sequence
+    * Suppose the true initial codeword is **c**
+    * There can't be a shorter codeword **c'**, since it would be prefix to **c**
+    * There can't be a longer codeword **c''**, since **c** would be prefix to it
+* Remove first codeword from sequence
+* By the same argument, there is exactly one codeword matching the new beginning
+    * and so on ...
 
-Comments:
+### Graph-based decoding of instantaneous codes
 
 * How to decode an instantaneous code: graph-based decoding
+
 * Advantage on instantaneous code over uniquely decodable: simple decoding
+
+* Why the name *instantaneous*?
+    * The codeword can be decoded as soon as it is fully received
+    * Counter-example: Uniquely decodable, non-instantaneous, delay 6: {0, 01, 011, 1110}
 
 ### Existence of instantaneous codes
 
-* When can there an instantaneous code exist?
+* When can an instantaneous code exist?
 
 Kraft inequality theorem:
 
@@ -119,9 +130,7 @@ Kraft inequality theorem:
 if and only if the lengths satisfy the following inequality:
 $$ \sum_i D^{-l_i} \leq 1.$$
 
-Proof:
-
-* At blackboard
+Proof: At blackboard
 
 Comments:
 
@@ -138,6 +147,7 @@ only if the lowest level is fully covered <=> no unused branches
 
 * For an instantaneous code which satisfies Kraft with equality, 
 all the graph branches terminate with codewords (there are no unused branches)
+    * This is most economical: codewords are as short as they can be
 
 
 ### Kraft inequality for uniquely decodable codes
@@ -147,16 +157,16 @@ all the graph branches terminate with codewords (there are no unused branches)
 
 McMillan theorem:
 
-* An uniquely decodable code satisfies the Kraft inequality:
+* Any uniquely decodable code **also** satisfies the Kraft inequality:
 $$ \sum_i D^{-l_i} \leq 1.$$
 
 Consequence:
 
 * For every uniquely decodable code, there exists in instantaneous code
-with the same lengths.
+with the same lengths!
 
 * Even though the class of uniquely decodable codes is larger than that of
-instantaneous codes, we have no benefit.
+instantaneous codes, it brings no benefit in codeword length
 
 * We can always use just instantaneous codes.
 
@@ -169,14 +179,14 @@ instantaneous codes, we have no benefit.
 3. Assign nodes in a certain order (e.g. descending probability)
 
 * Easy, standard procedure
-* Example: blackboard
+* Example: at blackboard
 
 ### Optimal codes
 
-* We want to minimize the **average length** of a code:
+* We want to **minimize the average length** of a code:
 $$\overline{l} = \sum_i p(s_i) l_i$$
 
-* But the lengths must obey the Kraft inequality (for uniquely decodable)
+* But the lengths must obey the Kraft inequality (for uniquely decodable), so:
 
 $$\begin{aligned} \textbf{minimize } &\sum_i p(s_i) l_i \\
 \textrm{subject to } &\sum_i D^{-l_i} \leq 1
@@ -202,6 +212,14 @@ The average length of an uniquely decodable code cannot be smaller than
 the source entropy
 $$H(S) \leq \overline{l}$$
 
+### Meaning of entropy
+
+* One can never represent messages, in general, with a code  having average length less than the entropy
+     
+* Truck analogy: at blackboard
+
+
+
 ### Non-optimal codes
 
 * Problem: $-\log(p(s_i))$ might not be an integer number
@@ -221,6 +239,8 @@ $$l_i = \lceil -\log(p(s_i)) \rceil$$
 * But still enough to prove fundamental results
 
 ### Average length of Shannon code
+
+Theorem:
 
 * The average length of a Shannon code satisfies
 $$H(S) \leq \overline{l} < H(S) + 1$$
@@ -280,6 +300,19 @@ Comments:
      * The complexity is too large for large $n$, so in practice we settle 
      with a close enough value
 * Other codes are even better the Shannon coding
+
+### Meaning of entropy
+ 
+Now we have a practical meaning of entropy:
+
+* **The entropy of an information source is the minimum number of bits
+required to represent the messages, on average**
+    * One can never use a code with average length smaller than the entropy
+    * We can use codes with average length bigger, but as close as desired to the entropy
+    * So entropy is the actual minimum number of bits needed
+    
+* Again the truck analogy
+ 
  
 ### Efficiency and redundancy of a code
 
