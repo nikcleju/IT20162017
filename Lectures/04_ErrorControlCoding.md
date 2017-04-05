@@ -12,7 +12,7 @@
 * Mutual information $I(X,Y)$ = the information transmitted on the channel
 * Why do we still need error control?
 
-Example: consider the following BSC channel (p = 0.01, $p(x_1) = 0.5$, $p(x_2)=0.5$):
+* Example: consider the following BSC channel (p = 0.01, $p(x_1) = 0.5$, $p(x_2)=0.5$):
 
 ![Binary symmetric channel (BSC) ](img/BSC.png){width=25%}
 
@@ -25,7 +25,7 @@ Example: consider the following BSC channel (p = 0.01, $p(x_1) = 0.5$, $p(x_2)=0
 * The reduction in  uncertainty due to communication = mutual information
     * $I(X,Y) = H(X) - H(X|Y) = \approx 0.919$ bit/msg
     
-* Even though we have large I(X,Y), about $1\%$ of all bits are erroneuos
+* Even though we have large I(X,Y), we still lose some information
     * Imagine downloading a file, but having $1\%$ wrong bits
 
 ###  Why is error control needed?
@@ -35,7 +35,7 @@ Example: consider the following BSC channel (p = 0.01, $p(x_1) = 0.5$, $p(x_2)=0
 
 * But that is not possible unless the channel is ideal.
 
-* So what do to? Error control coding
+* So what do to? **Error control coding**
 
 ### Modelling the errors on the channel
 
@@ -56,27 +56,33 @@ Example: consider the following BSC channel (p = 0.01, $p(x_1) = 0.5$, $p(x_2)=0
     * The transmitted sequence is summed modulo-2 with an **error sequence**
     * Where the error sequence is 1, there is a bit error
     * Where the error sequence is 0, there is no error
-$$\mathbf{r} = \mathbf{c} + \mathbf{e}$$
+$$\mathbf{r} = \mathbf{c} \oplus \mathbf{e}$$
+
+### Mathematical properties of modulo-2 arithmetic
+
+* Product is the same as for normal arithmetic
+
+* Multiplication is distributive just like in normal case
+$$a(b \oplus c) = ab \oplus ac$$
+
+* Subtraction = addition. There is no negativation. Each number is its own negative
+$$a \oplus a = 0$$
     
-### Error detection and error correction
+### Error detection vs correction
 
-Binary error correction:
-
-* For binary channels, know the location of error => fix error by inverting bit
-* Locating error = correcting error
-
-Two possibilities in practice:
+What can we do about errors?
 
 * **Error detection**: find out if there is any error in the received sequence
     * don't know exactly where, so cannot correct the bits, but can discard whole sequence
     * perhaps ask the sender to retransmit (examples: TCP/IP, internet communication etc)
     * easier to do
 * **Error correction**: find out exactly which bits have errors, if any
+    * locating the error = correcting error (for binary channels)
     * can correct all errored bits by inverting them
     * useful when can't retransmit (data is stored: on HDD, AudioCD etc.)
     * harder to do than mere detection
     
-### What is error control coding?
+### Overview of error control coding process
 
 The process of error control:
 
@@ -113,18 +119,20 @@ $$R = k/n$$
 
 ### Definitions
 
-* A code $C$ is an **$t$-error-detecting** code if it is able to *detect* $t$ errors
+* A code $C$ is an **$t$-error-detecting** code if it is able to *detect* $t$ or less errors
 
-* A code $C$ is an **$t$-error-correcting** code if it is able to *correct* $t$ errors
+* A code $C$ is an **$t$-error-correcting** code if it is able to *correct* $t$ or less errors
 
-* Examples: at blackboard (random code, parity bit)
+* Examples: at blackboard
 
 
-### Intuitive example: parity bits
+### A first example: parity bit
 
 * Add parity bit to a 8-bit long information word, before sending on a channel
     * coding rate $R = 8/9$
     * can detect 1 error in a 9-bit codeword
+    * detection algorithm: check if parity bit matches data
+    * fails for 2 errors
     * cannot correct error (don't know where it is located)
     
 * Add more parity bits to be able to locate the error
@@ -132,25 +140,26 @@ $$R = k/n$$
     * coding rate $R = 8/12$
     * can detect and correct 1 error in a 9-bit codeword
 
-### Intuitive example: repetition code
+### A second example: repetition code
 
-* Example from laboratory 4:
+* Repeat same block of data $n$ times
     * want to send a $k$-bit information word
-    * send codeword = the information word repeated 5 times
+    * codeword to send = the information word repeated $n=5$ times
     * coding rate $R = k/n = 1/5$
     * can detect and correct 2 errors, and maybe even more 
     if they do not affect the same bit
-    * not as efficient as other codes
+    * error correcting algorithm = majority rule
+    * not very efficient
 
 ### Redundancy
 
 * Because $k < n$, we introduce **redundancy**
     * to transmit $k$ bits of information we actually send more bits ($n$) 
     
-* Error control coding adds redundancy, while source coding (Chapter III) aims to reduce redundancy
-    * but redundancy is added in a controlled way, with a purpose
+* Error control coding adds redundancy, while source coding aims to reduce redundancy
+    * but now redundancy is added in a controlled way, with a purpose
     
-* In practice:
+* Source coding and error control coding in practice: do sequentially, independently
     1. First perform source coding, eliminating redundancy in representation of data
     2. Then perform error control coding, adding redundancy for protection
 
@@ -167,16 +176,16 @@ above capacity, $R > C$, are not achievable.
 
 In layman terms:
 
-* For all coding rates $R<C$, there is a way to recover the transmitted data perfectly (decoding algorithm will detect and correct
+* For all coding rates $R<C$, **there is a way** to recover the transmitted data perfectly (decoding algorithm will detect and correct
 all errors)
-* For all coding rates $R>C$, there is no way to recover the transmitted data perfectly
+* For all coding rates $R>C$, **there is no way** to recover the transmitted data perfectly
 
 Example:
 
-* Send binary digits (0,1) on a BSC channel with capacity 0.7 bits/message
-* For any coding rate $R < 0.7$ there exist error correction codes that allow perfect recovery
-    * i.e. for every 7 bits of data coding adds slightly more than 3 bits, on average => $R < \frac{7}{7+3}$
-* With less than 3 bits for every 7 bits of data => impossible to recover all the data
+* Send binary digits on a BSC channel with capacity 0.7 bits/message
+* For any coding rate $R < 0.7$ there exist an error correction code that allow perfect recovery
+    * $R < 0.7$ = for every 7 bits of data, coding adds more than 3 bits, on average
+* With less than 3 bits for every 7 bits of data => impossible to recover all data
 
 ### Ideas behind channel coding theorem
 
@@ -188,36 +197,35 @@ Example:
     * If the average for all codes goes to 0, there exists at least on code better than the average
     * That is the code we should use
     
-* !! **The theorem does not tell what code to use**, only that some code exists
-* There is no hint of how to actually find the code
-* Except general principles:
-    * using longer information words is better
-    * random codewords are generally good
+* **The theorem does not tell what code to use**, only that some code exists
+    * There is no clue of how to actually find the code in practice
+    * Only some general principles:
+        * using longer information words is better
+        * random codewords are generally good
     
 * In practice, cannot use infinitely long codewords, so will only get a *good enough* code
 
-### Practical scenario
+### Practical ideas for error control coding
 
 Practical ideas for error correcting codes:
 
 * If a codeword $\mathbf{c_1}$ is received with errors and becomes identical to another codeword $\mathbf{c_2}$ ==> cannot detect any errors
     * Receiver will think it received a correct codeword $c_2$ and the information word was $\mathbf{i_2}$, but actually it was $\mathbf{i_1}$
 * We want codewords as different as possible from each other
-* How to measure this difference?
-* Hamming distance
+* How to measure this difference? **Hamming distance**
 
 ### Hamming distance
 
-* The **Hamming distance** of two binary sequences $a$, $b$ of length $n$ = the total number
+* The **Hamming distance** of two binary sequences **a**, **b** of length $n$ = the total number
 of bit differences between them
-$$d_H(a, b) = \sum_{i=1}^N a_i \bigoplus b_i$$
+$$d_H(\mathbf{a}, \mathbf{b}) = \sum_{i=1}^N a_i \oplus b_i$$
 
 * We need at least $d_H(a, b)$ bit changes to convert one sequence into another
 
 * It satisfies the 3 properties of a metric function:
-    1. $d(a,b) \geq 0 \forall a,b$, with $d(a,b) = 0 \Leftrightarrow a = b$
-    2. $d(a,b) = d(b,a), \forall a,b$
-    3. $d(a,c) \leq d(a,b) + d(b,c), \forall a,b,c$
+    1. $d_H(\mathbf{a},\mathbf{b}) \geq 0 \;\;\; \forall \mathbf{a},\mathbf{b}$, with $d_H(\mathbf{a},\mathbf{b}) = 0 \Leftrightarrow \mathbf{a} = \mathbf{b}$
+    2. $d_H(\mathbf{a},\mathbf{b}) = d_H(\mathbf{b},\mathbf{a}), \forall \mathbf{a},\mathbf{b}$
+    3. $d_H(\mathbf{a},\mathbf{c}) \leq d_H(\mathbf{a},\mathbf{b}) + d_H(\mathbf{b},\mathbf{c}), \forall \mathbf{a},\mathbf{b},\mathbf{c}$
 
 * The **minimum Hamming distance of a code**, ${d_H}_{min}$ = the minimum Hamming distance
 between any two codewords $\mathbf{c_1}$ and $\mathbf{c_2}$
@@ -242,22 +250,22 @@ Decoding:
     * if $r$ is not a codeword, decide that there have been errors
 
 * Error correcting:
-    * choose codeword **nearest** to the received $\mathbf{r}$, in terms of Hamming distance
-    * (if $\mathbf{r}$ is a codeword, leave unchanged)
+	* if $\mathbf{r}$ is a codeword, decide there are no errors
+    * else, choose codeword **nearest** to the received $\mathbf{r}$, in terms of Hamming distance
     * this is known as **nearest-neighbor decoding**
     
 ### Performance of nearest neighbor decoding
 
 Theorem:
 
-If the minimum Hamming distance of a code is ${d_H}_{min}$:
-
-1. the code can *detect* up to **${d_H}_{min} - 1$** errors
-2. the code can *correct* up to **$\left\lfloor \frac{{d_H}_{min} - 1}{2} \right\rfloor$** errors using nearest-neighbor decoding
+* If the minimum Hamming distance of a code is ${d_H}_{min}$, then:
+    1. the code can *detect* up to **${d_H}_{min} - 1$** errors
+    2. the code can *correct* up to **$\left\lfloor \frac{{d_H}_{min} - 1}{2} \right\rfloor$** errors using nearest-neighbor decoding
 
 Consequence:
 
 * It is good to have ${d_H}_{min}$ as large as possible
+    * This implies longer codewords, i.e. smaller coding rate, i.e. more redundancy
 
 ### Performance of nearest neighbor decoding
 
@@ -312,14 +320,14 @@ $$\mathbf{i} \cdot [G] = \mathbf{c}$$
 
 ### Parity check matrix
 
-* How to check if a binary word is a codeword or not
-* Every $k \times n$ generator matrix $[G]$ has complementary matrix $[H]$ such that
+* How to check if a binary word is a codeword or not?
+* Every generator matrix $[G]$ has a complementary **parity-check matrix** $[H]$ such that
 $$0 = [H] \cdot [G]^T$$
 
 * For every codeword $\mathbf{c}$ generated with $[G]$:
 $$\boxed{ 0 = [H] \cdot \mathbf{c}^T }$$
 
-* because:
+* Proof:
 $$\mathbf{i} \cdot [G] = \mathbf{c}$$
 $$[G]^T \cdot \mathbf{i}^T = \mathbf{c}^T$$
 $$[H] \cdot \mathbf{c}^T = [H] \cdot [G]^T \cdot \mathbf{i}^T = 0$$
@@ -355,22 +363,26 @@ $$[H]_{(n-k) \times n} = [Q^T_{(n-k) \times k} \;\; I_{(n-k) \times (n-k)}]$$
 
 ### Interpretation as parity bits
 
-* The additional bits added by coding are just parity bits
+* The additional bits added by coding are actually just parity bits
+    * Proof: write the generation equations (example)
 
 * Generator matrix $[G]$ creates the codeword as:
     * first part = information bits (systematic code, first part of $[G]$ is identity matrix)
     * additional bits = combinations of information bits = *parity bits*
 
 * Parity-check matrix $[H]$ checks if parity bits correspond to information bits
-    * if all are ok, the syndrome $\mathbf{z} = 0$ 
+     * Proof: write down the parity check equation (example
+
+* If all parity bits match the data, the syndrome $\mathbf{z} = 0$ 
     * otherwise the syndrome $\mathbf{z} \neq 0$ 
 
-* This is all just parity bits!
+* Generator & parity-check matrices are just mathematical tools
+for easy computation & checking of parity bits
 
 
 ### Syndrome-based error detection
 
-Syndrome-based error *detection* for linear block codes:
+Syndrome-based error **detection** for linear block codes:
 
 1. generate codewords with generator matrix:
 $$\mathbf{i} \cdot [G] = \mathbf{c}$$
@@ -388,9 +400,9 @@ $$\mathbf{z} = [H] \cdot \mathbf{r}^T$$
 
 ### Syndrome-based error correction
 
-Syndrome-based error *correction* for linear block codes:
+Syndrome-based error **correction** for linear block codes:
 
-* $\mathbf{z} \neq 0$ => $\mathbf{r}$ has errors, we need to locate them
+* Syndrome $\mathbf{z} \neq 0$ => $\mathbf{r}$ has errors, we need to locate them
 
 * The syndrome is the effect only of the error word:
 $$\mathbf{z} = [H] \cdot \mathbf{r}^T = [H] \cdot (\mathbf{c}^T \oplus \mathbf{e}^T) = [H] \cdot \mathbf{e}^T$$
@@ -411,14 +423,14 @@ Example: at blackboard
 
 ### Conditions on [H] for error detection and correction
 
-Error detection:
+Conditions for syndrome-based error **detection**:
 
 * To detect a single error: every column of $[H]$ must be non-zero
 * To detect two error: sum of any two columns of $[H]$ cannot be zero
     * that means all columns are different
 * To detect $n$ errors: sum of any $n$ or less columns of $[H]$ cannot be zero
 
-Error correction (using syndrome-based decoding):
+Conditions for syndrome-based error **correction**:
 
 * To correct a single error: all columns of $[H]$ are different
     * so the syndromes, for a single error, are all different

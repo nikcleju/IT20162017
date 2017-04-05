@@ -445,6 +445,24 @@ $$p(x_i) = \frac{\overline{l_{x_i}}}{\overline{l}}$$
 
 * Example: binary code ($\overline{l_0}$, $\overline{l_1}$, $p(0)$, $p(1)$)
 
+### Source coding as data compression
+
+* Consider that the messages are already written in a binary code
+    * Example: characters in ASCII code
+
+* Source coding  = remapping the original codewords to other codewords 
+    * The new codewords are shorter, on average
+    
+* This means data compression
+    * Just like the example in lab session
+    
+* What does data compression remove?
+    * Removes **redundancy**: unused bits, patterns, regularities etc.
+    * If you can guess somehow the next bit in a sequence, it means the bit is not really necessary,
+    so compression will remove it
+    * The compressed sequence looks like random data: impossible to guess, 
+    no discernable patterns
+
 ### Chapter summary
 
 * Average length: $\overline{l} = \sum_i p(s_i) l_i$
