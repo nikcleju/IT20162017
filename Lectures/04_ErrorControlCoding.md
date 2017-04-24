@@ -156,7 +156,7 @@ $$R = k/n$$
 * Because $k < n$, we introduce **redundancy**
     * to transmit $k$ bits of information we actually send more bits ($n$) 
     
-* Error control coding adds redundancy, while source coding aims to reduce redundancy
+* Error control coding adds redundancy, while source coding aims to reduce redundancy --> Contradiction?
     * but now redundancy is added in a controlled way, with a purpose
     
 * Source coding and error control coding in practice: do sequentially, independently
@@ -205,7 +205,7 @@ Example:
     
 * In practice, cannot use infinitely long codewords, so will only get a *good enough* code
 
-### Practical ideas for error control coding
+### Distance between codewords
 
 Practical ideas for error correcting codes:
 
@@ -303,26 +303,25 @@ Example: blackboard
 
 ### Generator matrix 
 
-* All codewords for a linear block code can be generated via a matrix multiplication:
+* All codewords for a linear block code can be generated via a **matrix multiplication**:
 $$\mathbf{i} \cdot [G] = \mathbf{c}$$
 
 ![Codeword construction with generator matrix](img/GeneratorMatrix.png){width=50%}
 
 * $[G]$ = **generator matrix** of size $k \times n$
 
-* All operations are done in modulo-2 arithmetic:
-    * $0 \oplus 0 = 0$, $0 \oplus 1 = 1$, $1 \oplus 0 = 1$, $1 \oplus 1 = 0$
-    * multiplications as usual
-    
 * Row-wise interpretation:
     * $\mathbf{c}$ = a linear combination of rows in $[G]$
     * The rows of $[G]$ = a *basis* for the linear code
 
+* All operations are done in modulo-2 arithmetic
+
 ### Parity check matrix
 
-* How to check if a binary word is a codeword or not?
 * Every generator matrix $[G]$ has a complementary **parity-check matrix** $[H]$ such that
 $$0 = [H] \cdot [G]^T$$
+
+* How to check if a binary word is a codeword or not?
 
 * For every codeword $\mathbf{c}$ generated with $[G]$:
 $$\boxed{ 0 = [H] \cdot \mathbf{c}^T }$$
@@ -350,12 +349,12 @@ $$[H] \cdot \mathbf{c}^T = [H] \cdot [G]^T \cdot \mathbf{i}^T = 0$$
 * Generator matrix
     * first part = identity matrix
     * second part = some matrix $Q$
-$$[G]_{k \times n} = [I_{k \times k} \;\; Q_{k \times (n-k)}]$$
+$$[G]_{k \times n} = [Q_{k \times (n-k)} \;\; I_{k \times k}s]$$
 
 * Parity-check matrix
-    * first part = same Q, transposed
-    * second part = identity matrix
-$$[H]_{(n-k) \times n} = [Q^T_{(n-k) \times k} \;\; I_{(n-k) \times (n-k)}]$$
+    * first part = identity matrix
+    * second part = same Q, transposed
+$$[H]_{(n-k) \times n} = [I_{(n-k) \times (n-k)} \;\; Q^T_{(n-k) \times k}]$$
 
 * Can easily compute one from the other
 
@@ -371,13 +370,13 @@ $$[H]_{(n-k) \times n} = [Q^T_{(n-k) \times k} \;\; I_{(n-k) \times (n-k)}]$$
     * additional bits = combinations of information bits = *parity bits*
 
 * Parity-check matrix $[H]$ checks if parity bits correspond to information bits
-     * Proof: write down the parity check equation (example
+     * Proof: write down the parity check equation (see example)
 
 * If all parity bits match the data, the syndrome $\mathbf{z} = 0$ 
     * otherwise the syndrome $\mathbf{z} \neq 0$ 
 
-* Generator & parity-check matrices are just mathematical tools
-for easy computation & checking of parity bits
+* **Generator & parity-check matrices are just mathematical tools
+for easy computation & checking of parity bits**
 
 
 ### Syndrome-based error detection
@@ -388,7 +387,7 @@ Syndrome-based error **detection** for linear block codes:
 $$\mathbf{i} \cdot [G] = \mathbf{c}$$
 
 2. send codeword $\mathbf{c}$ on the channel
-3. random error word $\mathbf{e}$ is applied on the channel
+3. a random error word $\mathbf{e}$ is applied on the channel
 4. receive word $\mathbf{r} = \mathbf{c} \oplus \mathbf{e}$
 
 5. compute **syndrome** of $\mathbf{r}$:
@@ -448,20 +447,15 @@ are *the binary representation of all numbers from 1 to $2^r-1$*, $\forall r \ge
 
 * Example (blackboard): (7,4) Hamming code
 
-* Systematic: arrange the $r$ columns with a single 1 to the right, forming identity matrix
-    * Can compute generator matrix $[G]$
-    
-* Non-systematic: columns in natural order
-    * no significant difference from systematic case
+* Is systematic (but the columns are shuffled)
+    * Could move the $r$ columns with a single 1 to the left side, forming identity matrix
 
 ### Properties of Hamming codes
 
-* From definition of $[H]$ (systematic) it follows:
+* From definition of $[H]$ it follows:
     1. Codeword has length $n = 2^r - 1$
     2. $r$ bits are parity bits
     3. $k = 2^r-r-1$ bits are information bits
-
-* Same for non-systematic, but bits are arranged differently
 
 * Notation: **(n,k) Hamming code**
     * n = codeword length = $2^r-1$, 
@@ -495,8 +489,8 @@ are *the binary representation of all numbers from 1 to $2^r-1$*, $\forall r \ge
 	* If 3 errors happened: same as 1, can't differentiate
 
 * Now can simultaneously differentiate between:
-    * 1 error: perform correction
-    * 2 errors: detect, but do not perform correction
+    * 1 error: go ahead and perform correction
+    * 2 errors: can detect, but do not perform correction
     
 * If correction is never attempted, can detect up to 3 errors
     * minimum Hamming distance = 4 (no proof)
