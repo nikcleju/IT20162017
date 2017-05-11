@@ -636,6 +636,12 @@ for which *every cyclic shift of a codeword is also a codeword*
 * Used **everywhere** under the common name **CRC** (**C**yclic **R**edundancy **C**heck)
     * Network communications (Ethernet), data storage in Flash memory
 
+### Usage example: Ethernet frame
+
+* CRC codes are used in Ethernet frames:
+
+![CRC value in an Ethernet frame](img/EthernetFrame.png){widht=50%}
+
 ### Binary polynomials
 
 * Every binary sequence $\mathbf{a}$ corresponds to a polynomial $\mathbf{a(x)}$ with binary coefficients
@@ -688,30 +694,23 @@ Each factor generates a code:
 * $1 \oplus x \oplus x^3$ generates a (7,4) cyclic code
 * $1 \oplus x^2 \oplus x^3$ generates a (7,4) cyclic code
 
-### Computing the codewords
-Start from **information polynomial** with $k$ bits 
-$$i(x) = i_0 \oplus i_1x \oplus ... \oplus i_{k-1}x^{k-1}$$
+### Popular polynomials
 
-**Non-systematic** codeword generation:
+![Popular generator polynomials $g(x)$](img/PopularPolys.png){widght=80%}
 
-* Codeword = $i(x) \cdot g(x)$
+* Image from *http://www.ross.net/crc/download/crc_v3.txt*
 
-$$\boxed{c(x) = i(x) \cdot g(x)}$$
-
-**Systematic** codeword generation:
-
-$$\boxed{c(x) = b(x) \oplus x^{n-k}i(x)}$$
-
-where $b(x)$ is the remainder of dividing $x^{n-k} i(x)$ to $g(x)$:
-$$x^{n-k} i(x) = a(x) g(x) \oplus b(x)$$
-
-* (Proof: at blackboard)
+* Your turn: Write the polynomials in mathematical form!
 
 ### Proving the cyclic property
 
-We prove that any cyclic shift of a codeword is also a codeword.
+Theorem:
 
-Proof: at whiteboard
+* Any cyclic shift of a codeword is also a codeword.
+
+Proof:
+
+* Enough to consider a cyclic shift by 1 position
 
 * Original codeword
 $$c_0c_1c_2...c_{n-1} \rightarrow \mathbf{c(x)} = c_0 \oplus c_1x \oplus ... \oplus c_{n-1}x^{n-1}$$
@@ -719,16 +718,179 @@ $$c_0c_1c_2...c_{n-1} \rightarrow \mathbf{c(x)} = c_0 \oplus c_1x \oplus ... \op
 * Cyclic shift to the right by 1 position
 $$c_{n-1}c_0c_1...c_{n-2} \rightarrow \mathbf{c'(x)} = c_{n-1} \oplus c_0x \oplus ... \oplus c_{n-2}x^{n-1}$$
 
-* Note that 
+* We can rewrite:
 $$\begin{split}
 \mathbf{c'(x)} 
 =& x \cdot \mathbf{c(x)} \oplus c_{n-1}x^n \oplus c_{n-1}\\
 =& x \cdot \mathbf{c(x)} \oplus c_{n-1}(x^n \oplus 1)\\
 \end{split}$$
 
-Since $\mathbf{c(x)}$ is a multiple of $g(x)$, so is $x \cdot \mathbf{c(x)}$. Also $(x^n \oplus 1)$ is always a multiple of $g(x)$. It follows that their sum $\mathbf{c'(x)}$ is a also a multiple of $g(x)$, which means it is a codeword.
+### Proving the cyclic property
 
-### Cyclic code encoder circuits
+Proof (continued):
+
+* Since $\mathbf{c(x)}$ is a multiple of $g(x)$, so is $x \cdot \mathbf{c(x)}$
+* Also $(x^n \oplus 1)$ is always a multiple of $g(x)$
+* => It follows that their sum $\mathbf{c'(x)}$ is a also a multiple of $g(x)$, which means it is a codeword. 
+
+QED
+
+* Note that we relied on two key facts:
+    * that a codeword $\mathbf{c(x)}$ is always a multiple of $g(x)$
+    * that $g(x)$ is a factor of $(x^n \oplus 1)$
+    
+* Therefore a cyclic code = a code where the codewords are multiples
+of some $g(x)$ which is a factor of $(x^n \oplus 1)$
+
+### Coding and decoding of cyclic codes
+
+* Cyclic codes can be used for detection or correction
+    
+* In practice, they are used mostly for **detection only** (e.g. in Ethernet)
+    * because there are other codes with better performance for correection
+
+* Can be systematic / non-systematic
+    * In practice, the systematic variant is much preferred
+
+* We study coding/decoding from 3 perspectives:
+    * The mathematical way, with polynomials
+    * The programming way, e.g. as a programming algorithm
+    * The hardware way, via schematics
+
+### 1. Coding and decoding - The mathematical way
+
+Coding
+
+* We want to encode the **information polynomial** with $k$ bits 
+$$i(x) = i_0 \oplus i_1x \oplus ... \oplus i_{k-1}x^{k-1}$$
+
+* **Non-systematic** codeword generation:
+$$\boxed{c(x) = i(x) \cdot g(x)}$$
+
+* The resulting codeword is non-systematic
+
+### Systematic coding - The mathematical way
+
+* **Systematic** codeword generation:
+$$\boxed{c(x) = b(x) \oplus i(x) \cdot x^{n-k}}$$
+
+* $b(x)$ is the remainder of dividing $x^{n-k} i(x)$ to $g(x)$:
+$$x^{n-k} i(x) = a(x) g(x) \oplus b(x)$$
+
+* Proof: $c(x) = b(x) \oplus i(x) \cdot x^{n-k} = b(x) \oplus a(x) g(x) \oplus b(x) = a(x) g(x)$
+    * the codeword is indeed a multiple of $g(x)$
+    * that's because we add the remainder a second time, which cancels it
+
+### Interpretation
+
+* Note that the systematic code is composed of two parts:
+    * right part: $i(x) \cdot x^{n-k}$ = $i(x)$ shifted to the right by (n-k) positions
+        * Multipling with $x^k$ = right shifting by $k$
+    * left part: the remainder $b(x)$, which is of degree less than (n-k)
+    * the two parts are non-overlapping
+    * therefore the code is systematic (the information bits are to the right)
+
+* The important part is $b(x)$ (the remainder) = the **CRC value**
+
+* Examples: at blackboard
+
+### Decoding - The mathematical way
+
+* Any codeword $\mathbf{c(x)}$ is a multiple of $g(x)$
+* We need to check if the received $\mathbf{r(x)}$ still is a multiple of $g(x)$
+of dividing $x^{n-k} i(x)$ to $g(x)$:
+* Error detection:
+    * Divide $\mathbf{r(x)}$ to $g(x)$:
+        * If remainder of $r(x) : g(x)$ is 0 => it is a codeword, no errors present
+        * If remainder is non-zero => it's not a true codeword, **errors detected**
+
+* Error correction: use a lookup table
+    * build a lookup table for all possible error words (same as with matrix codes)
+    * for each error code, divide by $g(x)$ and compute the remainder
+    * when the remainder is identical to the remainder obtained with $\mathbf{r(x)}$, we found the error word => correct errors
+    
+* Example: at blackboard
+    
+### 2. Coding and decoding - The programming way
+
+* We will do it only for systematic codes
+
+* We want to compute the remainder $b(x)$ of of dividing $x^{n-k} i(x)$ to $g(x)$
+    * the remainder will be put alongside the information word, that's easy with programming
+    
+* We want **an efficient algorithm to compute the remainder of a polynomial division**
+
+* Different bit ordering:
+    * we wrote polynomials with largest power to the right
+    * but in binary, most significant bit (MSB) is to the right, LSB to the left
+    * The ordering is right-to-left here, it was left-to-right in the polynomials
+    * It's just a convention
+
+* Good reference: *"A Painless Guide to CRC Error Detection Algorithms"*, Ross N. Williams
+    * http://www.ross.net/crc/download/crc_v3.txt
+
+### Coding
+
+* The mathematical polynomial division = just like XOR-ing succesively with $g(x)$
+    * align the binary sequence of $g(x)$ under the leftmost 1
+    * XOR the sequences
+    * repeat
+
+### Example
+
+![Polynomial division = XORing succesively with $g(x)$](img/CRCAlgoXORing.png){height=60%}
+
+### Algorithm SIMPLE
+
+* This algorithm = "Algorithm SIMPLE"
+    * Use a binary register of size $W = n-k$ bits
+
+![CRC Algorithm SIMPLE](img/CRCAlgoSIMPLE.png){widht=50%}
+
+
+### Algorithm TABLE - on whole bytes, use precomputed table
+
+* Succesive XORing with shifted $g(x)$'s = XORing with just one combined sequence 
+    * ((a XOR b) XOR c) XOR d = a XOR (b XOR d XOR c)
+    
+* Given the first byte of $i(x)$, we can compute the combined XOR of the $g(x)$'s
+aligned under it (size increases with 1 byte to the right)
+
+* The first resulting byte will be completely zero => can ignore it
+
+### Algorithm TABLE - on whole bytes, use precomputed table
+*  The first byte of $i(x)$ determines the combined $g(x)$'s sequence; from it we can ignore first byte;
+the rest of the bytes must be XORed with the next part of the message $i(x)$
+
+* Can use a precomputed table of 256 values, each value having $W = k$ bytes,
+equal to the combined sequence of $g(x)$'s, first byte skipped
+
+### Algorithm TABLE - on whole bytes, use precomputed table
+
+* Example for a CRC of 32 bits ($g(x)$ of degree 32)
+
+![CRC Algorithm TABLE](img/CRCAlgoTABLE.png){widht=50%}
+
+### Algorithm TABLE - on whole bytes, use precomputed table
+
+* Algorithm implementation (pseudocode):
+
+![CRC Algorithm TABLE](img/CRCAlgoTABLECboth.png){widht=50%}
+
+### Decoding
+
+* Error detection: two possibilities:
+    * recompute the CRC value from the received $i(x)$, check if CRC is the same:
+        * If the same => no errors
+        * If different => errors detected!
+    * OR, equivalently, divide the whole sequence $r(x) = [i(x), b(x)]$ to $g(x)$:
+        * If the remainder is 0 => no errors
+        * If the remainder is non-zero => errors detected!
+    
+* Error correction:
+    * Not used in practice, won't do here
+    
+### 3. Coding and encoding - The hardware way
 
 * Coding = based on polynomial multiplications and divisions
 * Efficient circuits for multiplication / division exist, that can be used for systematic or non-systematic codeword generation (draw on blackboard)
