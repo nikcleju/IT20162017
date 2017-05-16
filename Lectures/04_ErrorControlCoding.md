@@ -901,29 +901,14 @@ equal to the combined sequence of $g(x)$'s, first byte skipped
 
 ### Operation of multiplication circuits
 
+- The circuits multiply an input polynomial $a(x)$ with a polynomial $g(x)$ 
+defined by their structure
+
 - The input polynomial is applied at the input, 1 bit at a time, starting from highest degree
 - The output polynomial is obtained at the output, 1 bit at a time, starting from highest degree
 - Because output polynomial has larger degree, the circuit needs to operate a few more samples until the final result is obtained. During this time the input is 0.
 - Examples: at the whiteboard
 
-### Linear analysis of multiplication circuits
-
-- These circuits are **linear time-invariant systems** (remember Digital Signal Processing class?), because they are composed only of summations, multiplication by scalars, and delay blocks.
-- Therefore, using the Z transform approach (to come soon in Digital Signal Processing class), the output can be computed based on the graph of the system:
-    - Draw the graph of the system: cells become $z^{-1}$ blocks, everything else is the same
-    - Every $z^{-1}$ block means a delay of one, which is what a cell does
-    - Call the input polynomial is $\mathbf{X(z)}$
-    - Call the output polynomial is $\mathbf{Y(z)}$
-    - Every $z^{-1}$ block means multiplying with $z^{-1}$
-    - Compute the output $\mathbf{Y(z)}$ based on $\mathbf{X(z)}$, from the graph
-
-### Linear analysis of multiplication circuits
-
-We get:
-$$Y(z) = X(z) \cdot G(z) \cdot z^{-m},$$
-meaning that the **output polynomial  = input polynomial * g(x) polynomial, with a delay of $m$ bits (time samples)**.
-
-The delay of $m$ time samples is caused by the fact that the input polynomial has degree $(k-1)$, but the resulting polynomial has larger degree $(k-1) + m$, therefore we need to wait $m$ more time samples until we get the full result.
 
 ### Circuits for division binary polynomials
 
@@ -931,36 +916,67 @@ The delay of $m$ time samples is caused by the fact that the input polynomial ha
 
 ### Operation of division circuits
 
+- The circuits divide an input polynomial $a(x)$ to a polynomial $g(x)$ 
+defined by their structure
 - The input polynomial is applied at the input, 1 bit at a time, starting from highest degree
 - The output polynomial is obtained at the output, 1 bit at a time, starting from highest degree
 - Because output polynomial has smaller degree, the circuit first outputs some zero values, until starting to output the result.
+- If the remainder is 0, all the cells remain with 0 at the end
 - Examples: at the whiteboard
 
-### Linear analysis of division circuits
 
-- These circuits are also **linear time-invariant systems**, because they are composed only of summations, multiplication by scalars, and delay blocks.
-- Therefore, using the Z transform approach, the output can be computed based on the graph of the system:
-    - Draw the graph of the system: cells become $z^{-1}$ blocks, everything else is the same
-    - Every $z^{-1}$ block means a delay of one, which is what a cell does
-    - Call the input polynomial is $\mathbf{X(z)}$
-    - Call the output polynomial is $\mathbf{Y(z)}$
-    - Every $z^{-1}$ block means multiplying with $z^{-1}$
-    - Compute the output $\mathbf{Y(z)}$ based on $\mathbf{X(z)}$, from the graph
-
-### Linear analysis of division circuits
-
-We get:
-$$Y(z) = \frac{X(z)}{G(z)}$$
-meaning that the **output polynomial  = input polynomial / g(x) polynomial**.
-
-### Cyclic encoder circuit
+### Non-systematic cyclic encoder circuit
 
 * Non-systematic cyclic encoder circuit:
     * simply a polynomial multiplication circuit
+    * input is $i(x)$, output is $c(x)$
 
-* A systematic cyclic encoder circuit:
-    * more complicated
-    * must analyze first Linear Feedback Shift Registers (LFSR) 
+![Circuits for polynomial multiplication](img/MultiplicationCircuits.png){height=40%}
+
+### Systematic cyclic encoder circuit
+
+![Systematic cyclic encoder circuit](img/CyclicCoder.png){width=80%}
+
+* It contains inside a division circuit (upper right part)
+
+### Systematic cyclic encoder circuit
+
+Operation of the cyclic encoder circuit:
+
+* Initially all cells are 0
+
+* Switch in position I:
+    - information bits are applied to the output and to the division circuit
+    - first bits of the output are the information bits => indeed systematic
+    - the input bits are applied to the division circuit
+
+* Switch in position II:
+    - some output bits are put at the ouput 
+    - the same output bits are also applied to the input of the division circuit
+
+* **In the end all cells end up with value 0**
+    - because in phase II we add the input (A) with itself (B) at the input of the division circuit,
+    so they cancel each other
+
+
+### Systematic cyclic encoder circuit
+
+* Why is the output $c(x)$ the desired codeword? Because:
+    1. has the information bits in the first part (systematic)
+    2. is a multiple of $g(x)$
+
+* Why is it a multiple of $g(x)$? Because:
+    * the output $c(x)$ is always applied also to the input of the division circuit
+        * in both phases of operation
+    * after division, the cells end up in 0, which means there is no remainder of division
+
+* Side note: we haven't really explained *why* the output $c(x)$ is a codeword, 
+we just showed that it is so
+
+
+### The parity-check matrix for systematic cyclic codes
+
+* Requires a more in-depth anaysis of Linear Feedback Shift Registers (LFSR) 
 
 ### Linear-Feedback Shift Registers (LFSR)
 
@@ -987,7 +1003,7 @@ the input is a computed as a linear combination of the flip-flops values
 ### States and transitions of LFSR
 
 * **State** of the LFSR = the sequence of bit values it holds at a certain 
-moment
+moment (in order: right to left)
 
 * The state at the next moment, $S(k+1)$,  can be computed by multiplication
 of the current state $S(k)$ with the **companion matrix** (or **transition matrix**) $[T]$:
@@ -1003,15 +1019,15 @@ $$T =
 g_0 & g_1 & g_2 & ... & g_{m-1} \\
 \end{bmatrix}$$
 
-* Note: reversing the order of bits in the state --> transposed matrix
+* Note: reversing the order of bits in the state => transposed matrix
 
 * Starting at time 0, then the state at time $k$ is:
 $$S(k) = [T]^k S(0)$$
 
 ### Period of LFSR
 
-* The number of states is finite --> they must repeat at some moment
-* The state equal to 0 must not be encountered (LFSR will remain 0 forever)
+* The number of states is finite => they must repeat at some moment
+* The state equal to 0 must not be encountered (in this case the LFSR will remain 0 forever)
 * The **period** of the LFSR = number of time moments until the state repeats
 * If period is $N$, then state at time $N$ is same as state at time $0$:
 $$S(N) = [T]^N S(0) = S(0),$$
@@ -1024,11 +1040,11 @@ polynomial $g(x)$ is called **primitive polynomial**
 ### LFSR with inputs
 
 * What if the LFSR has an input added to the feedback (XOR)?
-    * example at whiteboard
+    * exactly like a division circuit
     * assume the input is a sequence $a_{N-1}, ... a_0$
 
 * Since a LFSR is a **linear circuit**, the effect is added:
-$$S(1) = [T] \cdot S(0) + 
+$$S(1) = [T] \cdot S(0) \oplus 
 \begin{bmatrix}
 0\\
 0\\
@@ -1036,8 +1052,8 @@ $$S(1) = [T] \cdot S(0) +
 a_{N-1}
 \end{bmatrix}$$
 
-* In general
-$$S(k_1) = [T] \cdot S(k) + a_{N-k}\cdot [U],$$
+* In general:
+$$S(k_1) = [T] \cdot S(k) \oplus a_{N-k}\cdot [U],$$
 where $[U]$ is:
 $$[U] = \begin{bmatrix}
 0\\
@@ -1047,48 +1063,13 @@ $$[U] = \begin{bmatrix}
 \end{bmatrix}$$
 
 
-### Systematic cyclic encoder circuit
-
-* Draw on whiteboard only (sorry!)
-
-* Initially the LFSR state is 0 (all cells are 0)
-
-
-* Switch in position I:
-    - information bits applied to the output and to the division circuit
-    - first bits = information bits, systematic, OK
-    - LFSR with feedback and input, input = information bits
-
-* Switch in position II:
-    - LFSR with feedback and input, input = feedback
-    - output bits are also applied to the input of the division circuit
-
-* In the end all cells end up in 0, so ready for next encoding
-    - because the input and feedback cancel each other (are identical)
-
-
-### Systematic cyclic encoder circuit
-
-* Why is the result the desired codeword?
-
-* The output polynomial $c(x)$:
-    1. has the information bits in the first part (systematic)
-    2. is a multiple of $g(x)$
-==> therefore it is the systematic codeword for the information bits
-
-* the output $c(x)$ is a multiple of $g(x)$ because:
-    * the output is always applied also t the input of the division circuit
-    * after division, the cells end up in 0 <=> no remainder <=> so $c(x)$ is a multiple $g(x)$
-
-* Side note: we haven't really explained *why* the constructed output $c(x)$ is a codeword, but we *proved* that it is so, and this is enough
-
-
 ### The parity-check matrix for systematic cyclic codes
 
 * Cyclic codes are linear block codes, so they have a parity-check and a generator matrix
     * but it is more efficient to implement them with polynomial multiplication / division circuits
 
-* The parity-check matrix $[H]$ can be deduced by analyzing the states of the LFSR
+* The parity-check matrix $[H]$ can be deduced by analyzing the states of the LFSR (divider) inside 
+the encoder:
     * it is a LFSR with feedback and input
     * the input is the codeword $c(x)$
     * do computations at whiteboard ...
@@ -1102,17 +1083,70 @@ $$[H] = [U, TU, T^2U, ... T^{n-1}U]$$
 * The cyclic codeword satisfies the usual relation
 $$S(n) = 0 = [H] \mathbf{c^T}$$ 
 
-* In case of error, the state at time $n$ will be the syndrome (non-zero):
+* In case of an error, the state at time $n$ will be the syndrome (non-zero):
 $$S(n) = [H] \mathbf{r^T} \neq 0$$
+
+### Error detection and correction capability
+
+**Theorem**:
+
+Any (n,k) cyclic code with $g(x)$ being a primitive polynomial is capable of detecting 2 errors, or of correcting 1 error
+
+* Proof:
+    * $g(x)$ is primitive polynomial => the LSFR cycles through all possible states (non-zero)
+    * therefore all the columns of [H] are distinct
+    * Use the conditions based on the columns of [H] from first part of chapter
+        * sum of any two columns is non-zero => can detect 2 errors
+        * any two columns are distinct => can correct 1 error
+
+### Packets of errors
+
+* Until now, we considered a single error (i.e errors appear independently)
+
+* In real life, many times the errors appear in groups
+* A **packet of errors** (*an error burst*) is a sequence of two or more
+**consecutive errors**
+    * examples: *fading* in wireless channels
+
+*  The **length**  of the packet = the number of consecutive errors
+
+### Condition on columns of [H] for packets of errors
+
+* Conditions for packets of **e** errors are less restrictive than for 
+**e** independent errors
+
+* Error **detection** of $e$ independent errors:
+    * sum of **any** $e$ or fewer columns is **non-zero**
+* Error **detection** of a packet of $e$ errors
+    * sum of any **consecutive** $e$ or fewer columns is **non-zero**
+* Error **correction** of $e$ independent errors
+    * sum of **any** $e$ or fewer columns is **unique**
+* Error **correction** of a packet of $e$ errors
+    * sum of any **consecutive** $e$ or fewer columns is **unique**
+
+
+### Detection of packets of errors
+
+**Theorem**:
+
+Any (n,k) cyclic code is capable of detecting any error packet of length $n-k$ or less
+
+* A large fraction of longer bursts can also be detected (but not all)
+
+* No proof (too complicated)
+
+
 
 ### Cyclic decoder implemented with LFSR
 
-* Implement a 1-error-correcting cyclic decoder using LFSRs
-* Draw schematic at whiteboard only (sorry!)
-* Contents of schematic:
+![Cyclic decoder circuit](img/CyclicDecoderLFSR.png){width=80%}
+
+### Cyclic decoder implemented with LFSR
+
+* Consists of:
     - main shift register MSR
     - main switch SW
-    - 2 LFSRs (divider circuits) after $g(x)$
+    - 2 LFSRs (divider circuits), built based on $g(x)$
     - 2 error locator blocks, one for each divider
     - 2 validation gates V1, V2, for each divider
     - output XOR gate for correcting errors
@@ -1129,7 +1163,8 @@ $$S(n) = [H] \mathbf{r^T} \neq 0$$
 
 * Input phase ends after $n$ moments, the switch SW goes into position II
 * If the received word has no errors, all LFSR  cells are 0 (no remainder),
-will remain 0, the error locator will always output 0
+will remain 0, the error locator will always output 0,
+   * the MSR will output the received bits unchanged
 
 
 ### Cyclic decoder implemented with LFSR
@@ -1150,7 +1185,7 @@ will remain 0, the error locator will always output 0
 
 **Theorem:** if the $k$-th bit $r_{n-k}$ from $r(x)$ has an error, the error locator will output 1 exactly after $k-1$ moments
 
-* The $k$-th bit will be output from MSR after $k-1$ moments, i.e. exactly when the error locator will output 1 --> will correct it
+* That's exactly when the erroneous $k$-th bit will be output from MSR => will be changed back to the good value
 
 * **Proof:**
     1. assume error on position $r_{n-k}$
@@ -1179,158 +1214,11 @@ g_1 & g_2 & ...g_{m-1} & 1 \\
 \end{bmatrix}$$
 
 * The error locator is designed to detect this state $T^{-1}U$, 
-i.e. it is designed as shown
+i.e. it is designed as shown on blackboard
 
 * Therefore, the error locator will correct an error
 * This works only for 1 error, due to proof (1 column from [H])
 
-### Thresholding cyclic decoder
-
-* A different variant of cyclic decoder
-
-* Consider the parity check matrix $[H]$ of the cyclic code
-
-* Perform **elementary transformations** on $[H]$ to obtain a **reduced** matrix $[H_R]$ such that:
-    - last column contains only 1's
-    - all other columns contain a single 1 somewhere
-
-* **Elementary transformation** = summation of two rows
-
-* Some rows can be deleted if they cannot be put into required form
---> 
-the matrix $[H_R]$ will have $J$ rows (the more the better)
-
-* Denote with $A_j$ the entries of the resulting vector:
-$$A = \begin{bmatrix}A_1 \\ A_2 \\ .. \\ A_J \end{bmatrix} = [H_R] r^T$$
-
-
-### Thresholding cyclic decoder
-
-* Because a codeword $c^T$ produces 0 when multiplied with $[H]$, it will
-produce 0 when multiplied with $[H_R]$ also
-    * because rows of $[H_R]$ = summation of rows of $[H]$, but $c^T$ makes 
-    a 0 with all of them
-
-* Then
-$$A = [H_R] r^T = [H_R] (c+e)^T = [H_R] e^T$$
-
-* $e^T$ is the error word having 1's where errors are
-
-* Consider how many of the entries $A_k$ are equal to 1
-    * If there is just one error on last position of $e$, **all** $A_k$ are 1
-    * If there is just one error on some other position (non-last), only 
-    a **single** $A_k$ is 1
-
-### Thresholding cyclic decoder
-
-* **Theorem:** If there are at most $\left \lfloor \frac{J}{2} \right \rfloor$ errors in $e$, then
-
-    * if $\sum A_k > \left \lfloor \frac{J}{2} \right \rfloor$, then there is an error on last position
-    * if $\sum A_k \leq \left \lfloor \frac{J}{2} \right \rfloor$, then there is no error on last position
-
-* So we can **reliably** detect an error on last position even though there
-might be errors on other positions
-
-* **Proof:**
-    * if no error is on last position, at most $\left \lfloor \frac{J}{2} \right \rfloor$ sums $A_k$ are equal to 1
-    * if there is error on last position, then there are less than half errors on other position, so less then half $A_k$'s are 0
-
-* Because the code is cyclic, we can rotate the codeword so that next bit is last one --> compute again and decide for second bit, and so on for all
-
-### Thresholding cyclic decoder
-
-* Draw schematic on whiteboard only (sorry!)
-* Contents:
-    * a cyclic shift register 
-    * circuits for computing the sums $A_k$
-    * *adder and comparator* that adds all $A_j$ and compares sum
-    with $\left \lfloor \frac{J}{2} \right \rfloor$
-    * output XOR gate for correcting the error
-
-* Operation
-    * received word is loaded into shift register
-    * compute $A_j$, decide and correct error on first bit (last position)
-    * word rotates cyclically, do the same on next bit
-    * and so on until all bits have been on last position and corrected
-
-
-### Packets of errors
-
-* Until now, we considered a single error
-* If errors appear **independently** in a long data sequence, they will
-be typically rare --> only one error in a codeword is likely
-* So a single error may be good enough for random errors
-
-But:
-
-* In real life, many times the errors appear in packets
-* A **packet of errors** (*an error burst*) is a sequence of two or more
-**consecutive errors**
-    * examples: fading in wireless channels
-
-*  The **length**  of the packet = the number of consecutive errors
-
-### Condition on columns of [H]
-
-* Consider $e$ errors in a codeword
-
-Conditions on the parity-check matrix $[H]$:
-
-* Error **detection** of $e$ independent errors
-    * sum of **any** $e$ or fewer columns is **non-zero**
-* Error **detection** of a packet of $e$ errors
-    * sum of any **consecutive** $e$ or fewer columns is **non-zero**
-* Error **correction** of $e$ independent errors
-    * sum of **any** $e$ or fewer columns is **unique**
-* Error **correction** of a packet of $e$ errors
-    * sum of any **consecutive** $e$ or fewer columns is **unique**
-
-
-### Detection of packets of errors
-
-**Theorem**:
-
-Any (n,k) cyclic codes is capable of detecting any error packet of length $n-k$ or less
-
-* In other words: remainder after division with $g(x)$ is always non-zero
-
-* A large fraction of longer bursts can also be detected (but not all)
-
-* No proof (too complicated)
-
-### Correction of packets of errors
-
-* More difficult to analyze in general, will consider **only the case of packets two errors**
-
-* Cyclic encoder: identical! (might need a longer $g(x)$ though)
-
-* Cyclic decoder with LFSR: similar, but **error locator must be changed**
-
-### Cyclic decoder for packets of 2 errors or less
-
-* Similar schematic, but **error locator** is changed
-
-* Operation is identical
-
-* Error locator:
-
-    * Assume the error word has errors on positions $(n-k)$ and $(n-k-1)$
-
-    * After phase I, the state of the LFSR = column $(n-k)$ + column $(n-k-1)$ 
-    $$S(n) = T^{n-k}U \oplus T^{n-k-1}U$$
-
-    * After $k-1$ samples, the first erroneous bit is at the output, and the state is
-    $$S(n+k-1) = T^{-1}U \oplus T^{-2}U = \begin{bmatrix} 0 \\ 1 \\ ... \\ 0 \end{bmatrix}$$
-
-    * At the next sample, the state will be 
-    $$S(n+k) = T^{-1}U = \begin{bmatrix} 1 \\ 0 \\ ... \\ 0 \end{bmatrix}$$
-
-
-### Design of error locator
-
-* The error locator must detect these two states --> draw on whiteboard
-
-* If only a single error appears --> also works
 
 ### Summary of cyclic codes
 
