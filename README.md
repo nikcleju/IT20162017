@@ -3,7 +3,7 @@
 Here you will find all the materials for the class of Information Theory taught during 2016-2017
 spring semester.
 
-**Preparation for exam**: see [here](Exam\ExamPreparation.pdf)
+**Preparation for exam**: see [here](Exam/ExamPreparation.pdf)
 
 **Lectures [pdf]** You can view and download all lectures in PDF in the Lectures folder:
 
